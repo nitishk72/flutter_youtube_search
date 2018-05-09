@@ -1,67 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_api/youtube_api.dart';
-import 'package:flutter_search_bar/flutter_search_bar.dart';
 
 
-void main() {
-  runApp(new MaterialApp(
-      home: new YoutubeSearch()
-  ));
-}
+void main() => runApp(new MyApp());
 
-class YoutubeSearch extends StatefulWidget {
+class MyApp extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() {
-    return new SearchState();
-  }
+  MyAppState createState() => new MyAppState();
 }
 
-class SearchState extends State<YoutubeSearch> {
-  SearchBar searchBar;
-  static String key = 'YOUR_YOUTUBE_KEY';
-  List<YT_API> _result = [];
 
-  void Search(String value) async {
-    String q = value ?? "google";
-    print(value);
-    YoutubeAPI youtubeAPI = new YoutubeAPI(key);
-    _result = await youtubeAPI.Search(q);
+class MyAppState extends State<MyApp> {
+  static String key = 'YOUTUBE_API_KEY';
+  YoutubeAPI ytApi = new YoutubeAPI(key);
+  List<YT_API> ytResult = [];
+
+  void call_API() async {
+    String query = "JAVA";
+    ytResult = await ytApi.Search(query);
     setState(() {
-
     });
   }
-
-
-  SearchState() {
-    searchBar = new SearchBar(
-      inBar: true,
-      setState: setState,
-      onSubmitted: Search,
-      buildDefaultAppBar: buildAppBar,
-      showClearButton: false,
-      clearOnSubmit: true,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
+    call_API();
   }
-
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: searchBar.build(context),
-      body: new Container(
-        child: ListView.builder(
-            itemCount: _result.length,
-            itemBuilder: (_, int index) => ListItem(index)
-        ),
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: null,
-        child: new Icon(Icons.bug_report),
-        tooltip: "Report Bug",
+    return new MaterialApp(
+      home: new Scaffold(
+          appBar: AppBar(
+            title: Text('YT Search'),
+          ),
+          body: new Container(
+            child: ListView.builder(
+                itemCount: ytResult.length,
+                itemBuilder: (_, int index) => ListItem(index)
+            ),
+          )
       ),
     );
   }
@@ -72,25 +49,25 @@ class SearchState extends State<YoutubeSearch> {
         padding: EdgeInsets.all(12.0),
         child:new Row(
           children: <Widget>[
-            new Image.network(_result[index].thumbnail['default']['url'],),
+            new Image.network(ytResult[index].thumbnail['default']['url'],),
             new Padding(padding: EdgeInsets.only(right: 20.0)),
             new Expanded(child: new Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   new Text(
-                    _result[index].title,
+                    ytResult[index].title,
                     softWrap: true,
                     style: TextStyle(fontSize:18.0),
                   ),
                   new Padding(padding: EdgeInsets.only(bottom: 1.5)),
                   new Text(
-                    _result[index].channelTitle,
+                    ytResult[index].channelTitle,
                     softWrap: true,
                   ),
                   new Padding(padding: EdgeInsets.only(bottom: 3.0)),
                   new Text(
-                    _result[index].url,
+                    ytResult[index].description,
                     softWrap: true,
                   ),
                 ]
@@ -100,11 +77,4 @@ class SearchState extends State<YoutubeSearch> {
       ),
     );
   }
-  AppBar buildAppBar(BuildContext context) {
-    return new AppBar(
-        title: new Text('My Home Page'),
-        actions: [searchBar.getSearchAction(context)]
-    );
-  }
-
 }
